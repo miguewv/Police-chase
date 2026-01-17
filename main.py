@@ -1,6 +1,6 @@
 import pygame
 import sys
-
+import random
 
 # --- 1. SETUP ---
 pygame.init()
@@ -10,6 +10,7 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Police Chase")
+startTime = pygame.time.get_ticks()
 
 # Colors (RGB)
 BLACK = (0, 0, 0)
@@ -21,6 +22,7 @@ player_x = 400
 player_y = 300
 player_size = 50
 player_speed = 5
+Score = 0
 
 # Bandit variables (The Thief)
 bandit_x = 100
@@ -31,6 +33,7 @@ bandit_speed = 3
 # Clock to control FPS
 clock = pygame.time.Clock()
 
+
 # --- 2. THE GAME LOOP ---
 running = True
 while running:
@@ -40,6 +43,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    
 
 
     # if bandit is to the left of the player, move left
@@ -98,21 +102,43 @@ while running:
     if player_y > SCREEN_HEIGHT - player_size:
         player_y = SCREEN_HEIGHT - player_size
 
+    # Check for collision between player and bandit and update score
+    if player_x < bandit_x + bandit_size and player_y < bandit_y + bandit_size and bandit_x < player_x + player_size and bandit_y < player_y + player_size:
+        Score += 1
+        # Reset bandit position
+        bandit_x = random.randint(0, SCREEN_WIDTH - bandit_size)
+        bandit_y = random.randint(0, SCREEN_HEIGHT - bandit_size)
+
     # C. Drawing (Render)
     # -------------------
     screen.fill(BLACK) # 1. Clear screen
     
-    # 2. Draw the player (The Police)
+    #Draw the player (The Police)
     pygame.draw.rect(screen, POLICE_BLUE, [player_x, player_y, player_size, player_size])
 
-    # 2. Draw the bandit (The Thief)
+    #Draw the bandit (The Thief)
     pygame.draw.rect(screen, THIEF_RED, [bandit_x, bandit_y, bandit_size, bandit_size])
+
+    #Draw the timer
+    actualTime = pygame.time.get_ticks()
+    elapsedTime = (actualTime - startTime) / 1000
+    seconds = int(elapsedTime % 60)
+    font = pygame.font.SysFont(None, 36)
+
+    timerDraw = font.render(f"Time: {seconds}s", True, (255, 255, 255))
+    screen.blit(timerDraw, (10, 10))
+
+    #Draw the score
+    scoreDraw = font.render(f"Score: {Score}", True, (255, 255, 255))
+    screen.blit(scoreDraw, (10, 50))
 
     # 3. Update the display
     pygame.display.flip()
 
     # 60 FPS
     clock.tick(60)
+
+
 
 pygame.quit()
 sys.exit()
