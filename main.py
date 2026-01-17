@@ -1,6 +1,7 @@
 import pygame
 import sys
 
+
 # --- 1. SETUP ---
 pygame.init()
 
@@ -13,7 +14,7 @@ pygame.display.set_caption("Police Chase")
 # Colors (RGB)
 BLACK = (0, 0, 0)
 POLICE_BLUE = (0, 0, 255)
-THIEF_RED = (255, 0, 0)
+THIEF_RED = (251, 112, 0)
 
 # Player variables (The Police)
 player_x = 400
@@ -39,6 +40,37 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+
+    # if bandit is to the left of the player, move left
+    if bandit_x < player_x:
+        bandit_x -= bandit_speed
+        
+    # if bandit is below the player, move down
+    if bandit_y < player_y:
+        bandit_y -= bandit_speed
+
+    # if bandit is to the right of the player, move right
+    if bandit_x > player_x:
+        bandit_x += bandit_speed
+
+    # if bandit is above the player, move up
+    if bandit_y > player_y:
+        bandit_y -= bandit_speed
+
+
+
+    # Keep bandit inside the screen (Boundary check)
+    if bandit_x > SCREEN_WIDTH - bandit_size + 30:
+        bandit_x = SCREEN_WIDTH - bandit_size + 30
+    if bandit_x < 0:
+        bandit_x = 0
+
+    if bandit_y > SCREEN_HEIGHT - bandit_size + 30:
+        bandit_y = SCREEN_HEIGHT - bandit_size + 30
+    if bandit_y < 0:
+        bandit_y = 0
+
 
     # Get pressed keys
     keys = pygame.key.get_pressed()
