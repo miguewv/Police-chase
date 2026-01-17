@@ -61,15 +61,17 @@ while running:
 
 
     # Keep bandit inside the screen (Boundary check)
-    if bandit_x > SCREEN_WIDTH - bandit_size + 30:
-        bandit_x = SCREEN_WIDTH - bandit_size + 30
-    if bandit_x < 0:
-        bandit_x = 0
+    if bandit_x <= 0 or bandit_x >= SCREEN_WIDTH - bandit_size:
+        if bandit_x < SCREEN_WIDTH / 2:
+            bandit_x += bandit_speed
+        else:
+            bandit_x -= bandit_speed
 
-    if bandit_y > SCREEN_HEIGHT - bandit_size + 30:
-        bandit_y = SCREEN_HEIGHT - bandit_size + 30
-    if bandit_y < 0:
-        bandit_y = 0
+    if bandit_y <= 0 or bandit_y >= SCREEN_HEIGHT - bandit_size:
+        if bandit_y < SCREEN_HEIGHT / 2:
+            bandit_y += bandit_speed
+        else:
+            bandit_y -= bandit_speed
 
 
     # Get pressed keys
