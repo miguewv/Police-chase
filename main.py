@@ -46,39 +46,73 @@ while running:
     
 
 
-    # if bandit is to the left of the player, move left
+    # --- SMART BANDIT AI ---
+    # Calculate the desired escape direction (away from player)
+    escape_x = 0
+    escape_y = 0
+    
     if bandit_x < player_x:
-        bandit_x -= bandit_speed
+        escape_x = -bandit_speed  # flee left
+    elif bandit_x > player_x:
+        escape_x = bandit_speed   # flee right
         
-    # if bandit is below the player, move down
     if bandit_y < player_y:
-        bandit_y -= bandit_speed
+        escape_y = -bandit_speed  # flee up
+    elif bandit_y > player_y:
+        escape_y = bandit_speed   # flee down
 
-    # if bandit is to the right of the player, move right
-    if bandit_x > player_x:
-        bandit_x += bandit_speed
+    # Check if bandit is near walls (define a margin)
+    WALL_MARGIN = 5
+    near_left = bandit_x <= WALL_MARGIN
+    near_right = bandit_x >= SCREEN_WIDTH - bandit_size - WALL_MARGIN
+    near_top = bandit_y <= WALL_MARGIN
+    near_bottom = bandit_y >= SCREEN_HEIGHT - bandit_size - WALL_MARGIN
 
-    # if bandit is above the player, move up
-    if bandit_y > player_y:
-        bandit_y -= bandit_speed
+    # Smart corner escape: if stuck in corner, slide along the wall
+    # Check if trying to escape into a wall
+    would_hit_left = near_left and escape_x < 0
+    would_hit_right = near_right and escape_x > 0
+    would_hit_top = near_top and escape_y < 0
+    would_hit_bottom = near_bottom and escape_y > 0
+
+    # If would hit horizontal wall, cancel horizontal movement and boost vertical
+    if would_hit_left or would_hit_right:
+        escape_x = 0
+        # If also stuck vertically, pick a perpendicular escape direction
+        if escape_y == 0:
+            # Move away from player vertically
+            if player_y < SCREEN_HEIGHT / 2:
+                escape_y = bandit_speed  # go down
+            else:
+                escape_y = -bandit_speed  # go up
+
+    # If would hit vertical wall, cancel vertical movement and boost horizontal
+    if would_hit_top or would_hit_bottom:
+        escape_y = 0
+        # If also stuck horizontally, pick a perpendicular escape direction
+        if escape_x == 0:
+            # Move away from player horizontally
+            if player_x < SCREEN_WIDTH / 2:
+                escape_x = bandit_speed  # go right
+            else:
+                escape_x = -bandit_speed  # go left
+
+    # Apply the escape movement
+    bandit_x += escape_x
+    bandit_y += escape_y
+
+    # Final boundary clamp (safety net)
+    if bandit_x < 0:
+        bandit_x = 0
+    if bandit_x > SCREEN_WIDTH - bandit_size:
+        bandit_x = SCREEN_WIDTH - bandit_size
+    if bandit_y < 0:
+        bandit_y = 0
+    if bandit_y > SCREEN_HEIGHT - bandit_size:
+        bandit_y = SCREEN_HEIGHT - bandit_size
 
 
-
-    # Keep bandit inside the screen (Boundary check)
-    if bandit_x <= 0 or bandit_x >= SCREEN_WIDTH - bandit_size:
-        if bandit_x < SCREEN_WIDTH / 2:
-            bandit_x += bandit_speed
-        else:
-            bandit_x -= bandit_speed
-
-    if bandit_y <= 0 or bandit_y >= SCREEN_HEIGHT - bandit_size:
-        if bandit_y < SCREEN_HEIGHT / 2:
-            bandit_y += bandit_speed
-        else:
-            bandit_y -= bandit_speed
-
-
-    # Get pressed keys
+    # Get pressed keys (arrows)
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT]:
         player_x -= player_speed
@@ -87,6 +121,16 @@ while running:
     if keys[pygame.K_UP]:
         player_y -= player_speed
     if keys[pygame.K_DOWN]:
+        player_y += player_speed
+
+    # Get pressed keys (ZQSD - French keyboard)
+    if keys[pygame.K_q]:
+        player_x -= player_speed
+    if keys[pygame.K_d]:
+        player_x += player_speed
+    if keys[pygame.K_z]:
+        player_y -= player_speed
+    if keys[pygame.K_s]:
         player_y += player_speed
 
     # B. Game Logic (Update)
